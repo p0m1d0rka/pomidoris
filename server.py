@@ -8,7 +8,7 @@ global_data = {}
 sel = selectors.DefaultSelector()
 
 
-def read(conn, mask):
+def read(conn, mask) -> None:
     data = conn.recv(1024)  # Should be ready
     if data:
         action, key, value = split_input_data(data)
@@ -29,7 +29,7 @@ def read(conn, mask):
         conn.close()
 
 
-def accept(sock, mask):
+def accept(sock, mask) -> None:
     conn, addr = sock.accept()  # Should be ready
     print('accepted', conn, 'from', addr)
     conn.setblocking(False)
