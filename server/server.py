@@ -1,11 +1,13 @@
 import socket
 import re
 import selectors
+from .db import DataBase
 
 HOST = '127.0.0.1'
 PORT = 65432
 global_data = {}
 sel = selectors.DefaultSelector()
+db = DataBase()
 
 
 def read(conn, mask) -> None:
@@ -13,9 +15,9 @@ def read(conn, mask) -> None:
     if data:
         action, key, value = split_input_data(data)
         if action == "get":
-            conn.sendall(get_data(key))
+            conn.sendall(db.get(key))
         elif action == "set":
-            if set_data(key, value):
+            if db.set(key, value):
                 conn.sendall(b"OK")
             else:
                 conn.sendall(b"Error while setting data")
@@ -34,18 +36,6 @@ def accept(sock, mask) -> None:
     print('accepted', conn, 'from', addr)
     conn.setblocking(False)
     sel.register(conn, selectors.EVENT_READ, read)
-
-
-def set_data(key:str, value:str) -> bool:
-    global_data[key] = value
-    return True
-
-
-def get_data(key:str) -> bytes:
-    if key in global_data:
-        return global_data[key].encode()
-    else:
-        return f"Key not found {key}".encode()
 
 
 def split_input_data(data: bytes) -> tuple:
